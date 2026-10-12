@@ -33,6 +33,7 @@ We will handle registers next time, today we will put variables on the stack:
 - `-8(%rbp)` holds the result of `input_int`
 - `-16(%rbp)` holds intermediate value of `input_int() - 10`
 
+<!--
 ### Where we are going
 
 We build a compiler from a small Python subset to x86-64 assembly.
@@ -45,7 +46,7 @@ The whole compiler for this week is about 300 lines of Python.
 
 We will not write it in one go. We split it into *passes*,
 each doing one clearly identified job.
-
+-->
 
 ### Quadruples
 
@@ -73,7 +74,7 @@ We work with two source languages:
 
 *Lqua* is called $L_{var}^{mon}$ in Siek's book (*mon* for *monadic*); no relation to Haskell monads.
 
-Plan: 
+Plan:
 
 - first compile *Lqua* all the way down to x86,
 - then add one pass in front that translates *Lvar* to *Lqua*.
@@ -125,6 +126,7 @@ We can also use Python to interpret it by adding `import runtime` or
 python3 <(cat runtime.py example.py)
 ```
 
+It is also a subset of *Lvar*, so you can use an *Lvar* interpreter
 
 ### Lqua --- abstract syntax in Python
 
@@ -260,31 +262,6 @@ This is a deliberate simplification, each pass has one task:
 - `assign_homes` only about placing variables,
 - `patch_instructions` only about operand restrictions.
 
-### Pass order 
-
-Pass order is up to debate, here we chose a simple path:
-
-- `select_instructions -> assign_homes`
-
-We could instead run register assignment before instruction selection<br/>
---- this can produce better code in some cases, at the cost of a more complex pass.
-
-For example
-
-```
-%eax = %edx + %ecx
-```
-
-might be translated to
-
-```
-leaq (%edx,%ecx), %eax
-```
-
-but this cannot be done if any of the args is a memory location.
-
-When we talk about SSA, we will see another reason for putting register allocation first.
-
 ## Lqua to x86
 
 ### select_instructions
@@ -360,15 +337,13 @@ imulq %rax, -8(%rbp)          # ERROR: operand size mismatch
 imulq $137, %rdx, %rax       # OK, RAX := 137 * RDX
 ```
 
-The direct route is therefore to go through `%rax`:
+A solution is therefore to go through `%rax`:
 
 ```
 var = atm1 * atm2       =>      movq  src1, %rax
                                 imulq src2, %rax
                                 movq  %rax, var
 ```
-
-Three instructions --- always, whatever `var` turns out to be.
 
 When we allocate registers, you can try to fiddle with it - see Additional Material at the end.
 
@@ -476,7 +451,7 @@ main:
 ```
 
 Setting `%rax` to 0 is optional but useful: the exit code of `main`
-becomes the exit code of the process, 
+becomes the exit code of the process,
 <br/>and a nonzero one looks like a failure to test scripts.
 
 We could use `movq %rbp, %rsp` (or even the **leave** instruction) instead of `addq $N, %rsp`; there is a reason we do not.
@@ -624,7 +599,7 @@ The subexpressions of a `BinOp`/`UnaryOp` are always recursed into with
 OTOH when simplifying an assignment we will call `rco_exp(rhs, need_atomic=False)`
 
 This is  why `x=input_int()` is left alone,
-but when nested inside `+` it gets hoisted into a temporary. 
+but when nested inside `+` it gets hoisted into a temporary.
 
 ### Another example
 
@@ -749,7 +724,32 @@ So `x = 13 * y` can become a single instruction once `x` has a
 register, reading `y` straight from its stack slot.
 
 Small constants are a different matter: `x = 4 * y` is better served
-by `leaq (,%ry,4), %rx` or a shift. 
+by `leaq (,%ry,4), %rx` or a shift.
 
 Strength reduction is a topic of
 its own --- `imulq` is the general answer, not always the best one.
+
+### Pass order
+
+Pass order is up to debate, here we chose a simple path:
+
+- `select_instructions -> assign_homes`
+
+We could instead run register assignment before instruction selection<br/>
+--- this can produce better code in some cases, at the cost of a more complex pass.
+
+For example
+
+```
+%eax = %edx + %ecx
+```
+
+might be translated to
+
+```
+leaq (%edx,%ecx), %eax
+```
+
+but this cannot be done if any of the args is a memory location.
+
+When we talk about SSA, we will see another reason for putting register allocation first.
