@@ -16,9 +16,7 @@ Intermediate steps:
 - *x86var* - x86 assembly with variables
 - *x86+* - with hypothetical instructions e.g. `addq 24(%ebp), 32(%ebp)`
 
-### Lvar vs x86
-
-A translation might look like this:
+### Lvar vs x86 - translation example
 
 ![](ra-example1.svg)
 
@@ -34,7 +32,6 @@ We will handle registers next time, today we will put variables on the stack:
 
 - `-8(%rbp)` holds the result of `input_int`
 - `-16(%rbp)` holds intermediate value of `input_int() - 10`
-- `print` expects its argument in `%rdi`
 
 ### Where we are going
 
@@ -44,7 +41,7 @@ Source language *Lvar*: integers, arithmetic, variables, `print`, `input_int`.
 
 Target: x86-64 assembly (AT&T syntax, GNU as).
 
-The whole compiler for this chapter is about 300 lines of Python.
+The whole compiler for this week is about 300 lines of Python.
 
 We will not write it in one go. We split it into *passes*,
 each doing one clearly identified job.
@@ -98,6 +95,9 @@ interp_Lvar |              | run on x86
 
 For every program `P1`, interpreting `P1` and running the compiled `P2`
 must produce the same output.
+
+The languages `Lqua` and `Lvar` can be intepreted using a Python intepreter (modulo input_int);<br/>
+Writing and intepreter is also a good exercise.
 
 ### Lqua --- concrete syntax
 
@@ -322,7 +322,8 @@ var = -atm              =>      movq src, var
                                 negq var
 ```
 
-NOT `subq $0, var` !
+NOT `subq $0, var` or `subq var, $0`!
+
 
 ### select_instructions --- input and output
 
@@ -355,7 +356,7 @@ The book's *Lvar* has only `+`, `-` and unary minus. Our labs add `*`.
 ```att
 imulq %rcx, %rax             # ok
 imulq -8(%rbp), %rax         # ok --- the source may be memory
-imulq $13, -8(%rbp)          # ERROR: operand size mismatch
+imulq %rax, -8(%rbp)          # ERROR: operand size mismatch
 imulq $137, %rdx, %rax       # OK, RAX := 137 * RDX
 ```
 
@@ -618,7 +619,7 @@ rco_exp(BinOp(l, op, r), need_atomic)
 ```
 
 The subexpressions of a `BinOp`/`UnaryOp` are always recursed into with
-`need_atomic=True` --- they must end up atomic regardless of the caller.
+`need_atomic=True`<br/> --- they must end up atomic regardless of the caller.
 
 OTOH when simplifying an assignment we will call `rco_exp(rhs, need_atomic=False)`
 
