@@ -22,7 +22,7 @@ mrj-support = { path = "../support", editable = true }
 
 6. Create a compiler schema and clean up the no longer needed `main.py` file:
 ```
-cat ../support/compiler_skel.py main.py > compile.py
+cat ../support/compiler_skel.py main.py > compiler.py
 rm main.py
 ```
 
@@ -48,6 +48,6 @@ git push -u origin main
 
 9. Complete gradually the compiler, without forgetting to commit and push from time to time, and test using
 ```
-uv run compile.py <input.lqua>
+uv run compiler.py <input.lqua>
 ```
 
