@@ -65,7 +65,7 @@ allow more than 6 arguments by passing arguments on the stack (3p)
 allow functions to be assigned to variables, passed as function arguments, returned as results
 as described in EoC Chapter 8
 
-```
+```python
 def map(f : Callable[[int], int], v : tuple[int,int]) -> tuple[int,int]:
     return f(v[0]), f(v[1])
     
@@ -74,6 +74,7 @@ def inc(x : int) -> int:
 
 inc1 = inc
 print(map(inc1, (0, 41))[1])
+```
 
 ### lexically scoped functions (6p)
 
@@ -81,16 +82,7 @@ print(map(inc1, (0, 41))[1])
 
 Implement efficient tail calls as described in EoC 8.2.2
 
-### closure optismisation (3p)
-
-## Parsing (3p)
-
-- implement a LALR Lark parsers for Lvar and Lfun
-(including transforming Lark parse tree to respective Python AST subset);
-add an option use your parser in the compiler instead of `ast.parse`
-(note: both methods should be available to demonstrate that results are the same).
-- design a C-style syntax (braces and semicolons instead of indents) for Lfun
-- write a program translating between Python-style and C-style programs (both ways)
+### closure optimisation (3p)
 
 ## Optimisations
 
@@ -214,6 +206,15 @@ main_conclusion:
 Often there are multiple possible arrangements - try to find the best one and argue for your choices.
 Remove unreachable blocks (e.g. produced by `while False` etc)
 For best results - measure runtimes.
+
+## Parsing (for your own curiosity)
+
+- implement LALR parsers for Lvar and Lfun
+(including transforming Lark parse tree to respective Python AST subset);
+add an option use your parser in the compiler instead of `ast.parse`
+(note: both methods should be available to demonstrate that results are the same).
+- design a C-style syntax (braces and semicolons instead of indents) for Lfun
+- write a program translating between Python-style and C-style programs (both ways)
 
 
 ## Submission
