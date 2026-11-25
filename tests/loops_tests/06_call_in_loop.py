@@ -1,3 +1,5 @@
+from runtime import input_int
+
 n = input_int()
 acc = 0
 while n > 0:
